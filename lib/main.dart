@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import './pages/tabs.dart';
+// import './pages/tabs.dart';
 
-import './pages/hospitalpages/hospitalsearch.dart';
-import './pages/remindpage.dart';
-import './pages/recordpage/recordtotal.dart';
-import './pages/tabs/recordpage.dart';
+import './pages/registerpage.dart';
 
 import 'dart:io';
 
@@ -27,13 +24,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        // home:HospitalListPage(),
+      debugShowCheckedModeBanner: false,
+      // home:HospitalListPage(),
 
-        home: Tabs(),
-        // home : RemindPage(),
-        // home: TotalPage(),
-        // home: RecordPage(),
-      );
+      // home: Tabs(),
+      // home : RemindPage(),
+      // home: TotalPage(),
+      // home: RecordPage(),
+      home: RegistrationPage(),
+    );
   }
 }

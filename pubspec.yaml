@@ -55,6 +55,7 @@ dependencies:
   google_maps_webservice: ^0.0.20-nullsafety.5  # Google Places & 距離計算
   fluttertoast: ^8.2.12 #提示視窗
   path: ^1.9.0 #
+  flutter_dash: ^1.0.0 #繪製底線
 
 dev_dependencies:
   flutter_test:
