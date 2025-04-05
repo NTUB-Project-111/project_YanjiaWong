@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wounddetection/my_flutter_app_icons.dart';
+import '../feature/database.dart';
 import './tabs/homepage.dart';
 import './tabs/hospitalpage.dart';
 import './tabs/personpage.dart';
@@ -55,7 +56,6 @@ class _TabsState extends State<Tabs> {
           unselectedFontSize: 11,
           currentIndex: _currentIndex,
           items: const [
-            //icon的部分佑儒可以先自行改
             BottomNavigationBarItem(
               icon: Icon(MyFlutterApp.home),
               label: "首頁",
