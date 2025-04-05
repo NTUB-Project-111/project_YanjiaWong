@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 // import '../wound.dart'; // 引入分析頁面的檔案
 import 'dart:io';
+import '../../feature/database.dart';
 import '../../my_flutter_app_icons.dart';
-import 'package:image_picker/image_picker.dart';
-
-import '../resultpage.dart';
 import 'personalcontain.dart';
 
 class TakePicuturePage extends StatefulWidget {
-  const TakePicuturePage({super.key});
+  final String userId;
+  const TakePicuturePage({super.key, required this.userId});
 
   @override
   _TakePicuturePageState createState() => _TakePicuturePageState();
@@ -73,21 +72,6 @@ class _TakePicuturePageState extends State<TakePicuturePage> {
     super.dispose();
   }
 
-  Future<void> _takePhoto() async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-
-    try {
-      final image = await _controller!.takePicture();
-      print("圖片儲存於：${image.path}");
-      setState(() {
-        _image = File(image.path);
-      });
-      _showConfirmationDialog(); // 顯示確認對話框
-    } catch (e) {
-      print("拍照失敗：$e");
-    }
-  }
-
   void _switchCamera() {
     if (_cameras.length > 1) {
       setState(() {
@@ -100,21 +84,28 @@ class _TakePicuturePageState extends State<TakePicuturePage> {
     }
   }
 
-  void _navigateToPersonalPage(File image) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        // builder: (context) => WoundAnalysisPage(image: image), // 傳遞圖片
-        builder: (context) => PersonalContainPage(image: image), // 傳遞圖片
-      ),
-    );
-    
+  Future<void> _takePhoto() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+
+    try {
+      final image = await _controller!.takePicture();
+      print("圖片儲存於：${image.path}");
+
+      setState(() {
+        _image = File(image.path);
+      });
+
+      // 確認照片後回傳圖片檔案
+      _showConfirmationDialog();
+    } catch (e) {
+      print("拍照失敗：$e");
+    }
   }
 
-  // 顯示確認對話框
+// 顯示確認對話框
   void _showConfirmationDialog() {
     showDialog(
-      barrierDismissible: false, // 禁止點擊外部區域關閉對話框
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) => AlertDialog(
         shape: RoundedRectangleBorder(
@@ -136,8 +127,6 @@ class _TakePicuturePageState extends State<TakePicuturePage> {
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
@@ -155,9 +144,17 @@ class _TakePicuturePageState extends State<TakePicuturePage> {
                 backgroundColor: const Color(0xFF589399),
                 side: BorderSide.none,
               ),
-              onPressed: () {
-                Navigator.pop(context); // 關閉對話框
-                _navigateToPersonalPage(_image!); // 跳轉到分析頁面
+              onPressed: () async {
+                if (_image != null) {
+                  try {
+                    await DatabaseHelper.updateImage(widget.userId, _image!);
+                    print("成功更新圖片到資料庫");
+                  } catch (e) {
+                    print("更新圖片失敗: $e");
+                  }
+                }
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => const PersonalContainPage()));
               },
               child: const Text(
                 '確認',
@@ -195,6 +192,104 @@ class _TakePicuturePageState extends State<TakePicuturePage> {
     );
   }
 
+  // Future<void> _takePhoto() async {
+  //   if (_controller == null || !_controller!.value.isInitialized) return;
+
+  //   try {
+  //     final image = await _controller!.takePicture();
+  //     print("圖片儲存於：${image.path}");
+  //     setState(() {
+  //       _image = File(image.path);
+  //     });
+  //     _showConfirmationDialog(); // 顯示確認對話框
+  //   } catch (e) {
+  //     print("拍照失敗：$e");
+  //   }
+  // }
+
+  // // 顯示確認對話框
+  // void _showConfirmationDialog() {
+  //   showDialog(
+  //     barrierDismissible: false, // 禁止點擊外部區域關閉對話框
+  //     context: context,
+  //     builder: (BuildContext context) => AlertDialog(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(20),
+  //         side: const BorderSide(
+  //           color: Color(0xFF589399),
+  //           width: 2,
+  //         ),
+  //       ),
+  //       backgroundColor: Colors.white,
+  //       title: const Text(
+  //         '確認照片',
+  //         style: TextStyle(
+  //           fontSize: 20,
+  //           color: Color(0xFF589399),
+  //           fontWeight: FontWeight.w700,
+  //         ),
+  //         textAlign: TextAlign.center,
+  //       ),
+  //       content: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         crossAxisAlignment: CrossAxisAlignment.center,
+  //         children: [
+  //           ClipRRect(
+  //             borderRadius: BorderRadius.circular(15),
+  //             child: Image.file(
+  //               _image!,
+  //               width: 200,
+  //               height: 160,
+  //               fit: BoxFit.cover,
+  //             ),
+  //           ),
+  //           const SizedBox(height: 20),
+  //           OutlinedButton(
+  //             style: OutlinedButton.styleFrom(
+  //               padding: const EdgeInsets.symmetric(horizontal: 70),
+  //               backgroundColor: const Color(0xFF589399),
+  //               side: BorderSide.none,
+  //             ),
+  //             onPressed: () {
+  //               Navigator.pop(context); // 關閉對話框
+  //               _navigateToPersonalPage(_image!); // 跳轉到分析頁面
+  //             },
+  //             child: const Text(
+  //               '確認',
+  //               style: TextStyle(
+  //                 color: Colors.white,
+  //                 fontSize: 15,
+  //                 fontWeight: FontWeight.w700,
+  //               ),
+  //             ),
+  //           ),
+  //           const SizedBox(height: 10),
+  //           OutlinedButton(
+  //             style: OutlinedButton.styleFrom(
+  //               padding: const EdgeInsets.symmetric(horizontal: 70),
+  //               side: const BorderSide(
+  //                 width: 2,
+  //                 color: Color(0xFF589399),
+  //               ),
+  //             ),
+  //             onPressed: () {
+  //               Navigator.pop(context); // 關閉對話框
+  //             },
+  //             child: const Text(
+  //               '取消',
+  //               style: TextStyle(
+  //                 color: Color(0xFF589399),
+  //                 fontSize: 15,
+  //                 fontWeight: FontWeight.w700,
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
